@@ -1,0 +1,64 @@
+# 라이브러리 불러오기
+
+install.packages("data.table")
+library(dplyr)
+library(ggplot2)
+library(data.table)
+
+
+# 데이터 로드
+
+product <- fread("Product.csv", 
+                 header=TRUE,
+                 encoding="UTF-8",
+                 stringsAsFactors = FALSE)
+
+custom <- fread("Custom.csv", 
+                 header=TRUE,
+                 encoding="UTF-8",
+                 stringsAsFactors = FALSE)
+
+session <- fread("Session.csv", 
+                 header=TRUE,
+                 encoding="UTF-8",
+                 stringsAsFactors = FALSE)
+
+master <- fread("Master.csv", 
+                 header=TRUE,
+                 encoding="UTF-8",
+                 stringsAsFactors = FALSE)
+
+search1 <- fread("Search1.csv", 
+                 header=TRUE,
+                 encoding="UTF-8",
+                 stringsAsFactors = FALSE)
+
+search2 <- fread("Search2.csv", 
+                 header=TRUE,
+                 encoding="UTF-8",
+                 stringsAsFactors = FALSE)
+
+
+## 이상치 , 결측치 처리 / 이상한 데이터 확인 / 파생변수 
+
+
+# custom 살펴보기
+
+# master 살펴보기
+
+# product 살펴보기
+
+# search1 살펴보기
+
+# search2 살펴보기
+
+# session 살펴보기
+
+
+
+## 데이터 병합
+
+
+
+
+## 분석 시작
