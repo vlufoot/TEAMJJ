@@ -1,0 +1,182 @@
+# 라이브러리 불러오기
+
+install.packages("data.table")
+library(dplyr)
+library(ggplot2)
+library(data.table)
+
+
+# 데이터 로드
+
+product <- fread("Product.csv", 
+                 header=TRUE,
+                 encoding="UTF-8",
+                 stringsAsFactors = FALSE)
+
+custom <- fread("Custom.csv", 
+                 header=TRUE,
+                 encoding="UTF-8",
+                 stringsAsFactors = FALSE)
+
+session <- fread("Session.csv", 
+                 header=TRUE,
+                 encoding="UTF-8",
+                 stringsAsFactors = FALSE)
+
+master <- fread("Master.csv", 
+                 header=TRUE,
+                 encoding="UTF-8",
+                 stringsAsFactors = FALSE)
+
+search1 <- fread("Search1.csv", 
+                 header=TRUE,
+                 encoding="UTF-8",
+                 stringsAsFactors = FALSE)
+
+search2 <- fread("Search2.csv", 
+                 header=TRUE,
+                 encoding="UTF-8",
+                 stringsAsFactors = FALSE)
+
+
+## 이상치 , 결측치 처리 / 이상한 데이터 확인 / 파생변수 
+
+
+  # custom 살펴보기
+str(custom)
+head(custom)
+tail(custom)
+
+table(custom$CLNT_GENDER)     # 성비 570000 : 100000
+table(custom$CLNT_AGE)        # 나이 10대부터 80대까지 ( 30,40대가 대부분을 차지 )
+hist(custom$CLNT_AGE)         
+
+custom$CLNT_ID <- as.factor(custom$CLNT_ID)
+custom$CLNT_GENDER <- as.factor(custom$CLNT_GENDER)
+custom$CLNT_AGE <- as.factor(custom$CLNT_AGE)         # 팩터타입 변환
+
+
+
+  # master 살펴보기
+str(master)
+head(master)
+
+master <- rename(master,Categ_H=CLAC1_NM) 
+master <- rename(master,Categ_M=CLAC2_NM)
+master <- rename(master,Categ_S=CLAC3_NM) # category 대중소로 변수명 변환
+
+master$PD_C <- as.factor(master$PD_C)   # 팩터타입 변환
+
+
+length(unique(master$PD_C))   # 850000개 정도의 상품코드가 있음
+length(unique(master$PD_NM))   # 820000개 정도의 상품명가 있음 (30000개 정도 동일한 상품명이 존재한다는 뜻)
+length(unique(master$Categ_H))   # 37개의 대분류
+length(unique(master$Categ_M))   # 128개의 중분류
+length(unique(master$Categ_S))   # 898개의 소분류
+
+unique(master$Categ_H)
+
+
+  # search1 살펴보기
+
+str(search1)
+head(search1)
+
+search1 %>%
+  arrange(desc(SEARCH_CNT)) %>% 
+  head()                          # 최대 98번의 검색 이후 구매 / 검색어를 구매하나?
+
+search1$CLNT_ID <- as.factor(search1$CLNT_ID)
+search1$SESS_ID <- as.factor(search1$SESS_ID)   # 팩터타입 변환
+
+
+
+  # search2 살펴보기
+
+str(search2)
+head(search2)
+
+search2$SEARCH_CNT <- as.integer(search2$SEARCH_CNT)              # SEARCH_CNT INT타입변환
+search2$SESS_DT <- as.character(search2$SESS_DT)                
+search2$SESS_DT <- as.Date(search2$SESS_DT, format="%Y%m%d")      # SESS_DT 날짜타입변환
+
+
+search2_0401 <- search2 %>%
+  filter(SESS_DT=="2018-04-01")   
+
+search2_0616 <- search2 %>%
+  filter(SESS_DT=="2018-06-16")   
+
+search2_0901 <- search2 %>%
+  filter(SESS_DT=="2018-09-01")   # 하루에 약 45000개정도의 키워드가 검색되며
+
+45000*180   # search2 가 800만건인 이유 ok
+
+search2_0401 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
+search2_0616 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
+search2_0901 %>% arrange(desc(SEARCH_CNT)) %>% head(100)   #보통 900건 정도가 최대 검색량정도인듯(1주일샘플 잡고 다시 보자)
+
+
+
+  # product 살펴보기
+
+str(product)
+head(product)
+
+product$CLNT_ID <- as.factor(product$CLNT_ID)       # 클라ID 팩터타입 변환
+product$SESS_ID <- as.factor(product$SESS_ID)       # 세션ID 팩터타입 변환
+product$PD_C <- as.factor(product$PD_C)             # 상품코드 팩터타입 변환
+product$PD_BUY_AM <- as.integer(product$PD_BUY_AM)  # 구매금액 int타입 변환
+product$PD_BUY_CT <- as.integer(product$PD_BUY_CT)  # 구매갯수 int타입 변환
+
+
+length(unique(product$PD_BRA_NM)) # 의류브랜드가 대부분(브랜드 22000개정도)
+
+
+product %>% filter(HITS_SEQ==1)
+
+  
+
+  # session 살펴보기
+str(session)
+
+table(is.na(session$TOT_SESS_HR_V))
+
+session$CLNT_ID <- as.factor(session$CLNT_ID)
+session$SESS_ID <- as.factor(session$SESS_ID)
+session$SESS_DT <- as.character(session$SESS_DT)
+session$SESS_DT <- as.Date(session$SESS_DT,format="%Y%m%d")
+session$TOT_SESS_HR_V <- gsub(",","",session$TOT_SESS_HR_V)   #integer 타입으로 바꾸기위해 쉼표 제거
+session$TOT_SESS_HR_V <- as.integer(session$TOT_SESS_HR_V)    #integer 타입으로 변환
+session$DVC_CTG_NM <- as.factor(session$DVC_CTG_NM)
+session$ZON_NM <- as.factor(session$ZON_NM)
+session$CITY_NM <- as.factor(session$CITY_NM)
+
+table(session$ZON_NM)
+table(session$CITY_NM)    # NOT SET이 NULL값인가??
+session %>% filter(CITY_NM == "(not set)")
+
+session <- session %>% select(-ZON_NM, -CITY_NM)  # 지역 사용안하므로 지움
+
+str(session)
+
+
+
+## 데이터 병합
+
+
+
+
+## 분석 시작
+
+
+
+
+
+
+
+
+
+
+
+
