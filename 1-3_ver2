@@ -14,9 +14,9 @@ product <- fread("Product.csv",
                  stringsAsFactors = FALSE)
 
 custom <- fread("Custom.csv", 
-                 header=TRUE,
-                 encoding="UTF-8",
-                 stringsAsFactors = FALSE)
+                header=TRUE,
+                encoding="UTF-8",
+                stringsAsFactors = FALSE)
 
 session <- fread("Session.csv", 
                  header=TRUE,
@@ -24,9 +24,9 @@ session <- fread("Session.csv",
                  stringsAsFactors = FALSE)
 
 master <- fread("Master.csv", 
-                 header=TRUE,
-                 encoding="UTF-8",
-                 stringsAsFactors = FALSE)
+                header=TRUE,
+                encoding="UTF-8",
+                stringsAsFactors = FALSE)
 
 search1 <- fread("Search1.csv", 
                  header=TRUE,
@@ -42,7 +42,7 @@ search2 <- fread("Search2.csv",
 ## 이상치 , 결측치 처리 / 이상한 데이터 확인 / 파생변수 
 
 
-  # custom 살펴보기
+# custom 살펴보기
 str(custom)
 head(custom)
 tail(custom)
@@ -56,14 +56,24 @@ custom$CLNT_GENDER <- as.factor(custom$CLNT_GENDER)
 custom$CLNT_AGE <- as.factor(custom$CLNT_AGE)         # 팩터타입 변환
 
 
+table(is.na(custom$CLNT_ID))
+table(is.na(custom$CLNT_GENDER))
+table(is.na(custom$CLNT_AGE))
 
-  # master 살펴보기
+
+
+# master 살펴보기
 str(master)
 head(master)
 
 master <- rename(master,Categ_H=CLAC1_NM) 
 master <- rename(master,Categ_M=CLAC2_NM)
 master <- rename(master,Categ_S=CLAC3_NM) # category 대중소로 변수명 변환
+
+master$Categ_H <- as.factor(master$Categ_H)
+master$Categ_M <- as.factor(master$Categ_M)
+master$Categ_S <- as.factor(master$Categ_S)
+
 
 master$PD_C <- as.factor(master$PD_C)   # 팩터타입 변환
 
@@ -77,10 +87,25 @@ length(unique(master$Categ_S))   # 898개의 소분류
 unique(master$Categ_H)
 
 
-  # search1 살펴보기
+table(is.na(master$PD_C))
+table(is.na(master$PD_NM))
+table(is.na(master$Categ_H))
+table(is.na(master$Categ_M))
+table(is.na(master$Categ_S))    # 결측치 확인
+
+
+
+# search1 살펴보기
 
 str(search1)
 head(search1)
+summary(search1)
+
+search1 %>% filter(CLNT_ID==5612428&SESS_ID==1876482)
+product %>% filter(CLNT_ID==5612428&SESS_ID==1876482)
+master %>% filter(PD_C==134747)
+master %>% filter(PD_C==682810)
+
 
 search1 %>%
   arrange(desc(SEARCH_CNT)) %>% 
@@ -89,58 +114,111 @@ search1 %>%
 search1$CLNT_ID <- as.factor(search1$CLNT_ID)
 search1$SESS_ID <- as.factor(search1$SESS_ID)   # 팩터타입 변환
 
+table(is.na(search1$CLNT_ID))
+table(is.na(search1$SESS_ID))
+table(is.na(search1$KWD_NM))
+table(is.na(search1$SEARCH_CNT))
 
 
-  # search2 살펴보기
+# search2 살펴보기
 
 str(search2)
 head(search2)
+summary(search2)
 
+
+head(search2,100)
+
+search2$SEARCH_CNT <- gsub(",","",search2$SEARCH_CNT)   #integer 타입으로 바꾸기위해 쉼표 제거
 search2$SEARCH_CNT <- as.integer(search2$SEARCH_CNT)              # SEARCH_CNT INT타입변환
+
 search2$SESS_DT <- as.character(search2$SESS_DT)                
 search2$SESS_DT <- as.Date(search2$SESS_DT, format="%Y%m%d")      # SESS_DT 날짜타입변환
 
 
-search2_0401 <- search2 %>%
-  filter(SESS_DT=="2018-04-01")   
+table(is.na(search2$SEARCH_CNT))
+table(is.na(search2$SESS_DT))
+table(is.na(search2$KWD_NM))    # 결측치 확인
 
-search2_0616 <- search2 %>%
-  filter(SESS_DT=="2018-06-16")   
 
-search2_0901 <- search2 %>%
-  filter(SESS_DT=="2018-09-01")   # 하루에 약 45000개정도의 키워드가 검색되며
+search2_0618 <- search2 %>%
+  filter(SESS_DT=="2018-06-18")   
+search2_0619 <- search2 %>%
+  filter(SESS_DT=="2018-06-19")   
+search2_0620 <- search2 %>%
+  filter(SESS_DT=="2018-06-20")   
+search2_0621 <- search2 %>%
+  filter(SESS_DT=="2018-06-21")   
+search2_0622 <- search2 %>%
+  filter(SESS_DT=="2018-06-22")   
+search2_0623 <- search2 %>%
+  filter(SESS_DT=="2018-06-23")   
+search2_0624 <- search2 %>%
+  filter(SESS_DT=="2018-06-24")   
+
+# 하루에 약 45000개정도의 키워드가 검색되며
 
 45000*180   # search2 가 800만건인 이유 ok
 
-search2_0401 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
-search2_0616 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
-search2_0901 %>% arrange(desc(SEARCH_CNT)) %>% head(100)   #보통 900건 정도가 최대 검색량정도인듯(1주일샘플 잡고 다시 보자)
+search2_0618 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
+search2_0619 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
+search2_0620 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
+search2_0621 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
+search2_0622 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
+search2_0623 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
+search2_0624 %>% arrange(desc(SEARCH_CNT)) %>% head(30) 
+#보통 2000건 정도가 최대 검색량정도인듯(일요일에 확 뜀 => 월요병 가정)
 
 
-
-  # product 살펴보기
+# product 살펴보기
 
 str(product)
 head(product)
+summary(product)
 
 product$CLNT_ID <- as.factor(product$CLNT_ID)       # 클라ID 팩터타입 변환
 product$SESS_ID <- as.factor(product$SESS_ID)       # 세션ID 팩터타입 변환
 product$PD_C <- as.factor(product$PD_C)             # 상품코드 팩터타입 변환
+product$PD_BUY_AM <- gsub(",","",product$PD_BUY_AM) #integer 타입으로 바꾸기위해 쉼표 제거
 product$PD_BUY_AM <- as.integer(product$PD_BUY_AM)  # 구매금액 int타입 변환
+product$PD_BUY_CT <- gsub(",","",product$PD_BUY_CT) #integer 타입으로 바꾸기위해 쉼표 제거
 product$PD_BUY_CT <- as.integer(product$PD_BUY_CT)  # 구매갯수 int타입 변환
+
+
+table(is.na(product$CLNT_ID))
+table(is.na(product$SESS_ID))
+table(is.na(product$HITS_SEQ))
+table(is.na(product$PD_C))
+table(is.na(product$PD_ADD_NM))
+table(is.na(product$PD_BRA_NM))
+table(is.na(product$PD_BUY_AM))
+table(is.na(product$PD_BUY_CT))       # 결측치 확인
+
 
 
 length(unique(product$PD_BRA_NM)) # 의류브랜드가 대부분(브랜드 22000개정도)
 
 
-product %>% filter(HITS_SEQ==1)
+product <- product %>% filter(HITS_SEQ!=1)    # 이상치 처리
+product %>% filter(HITS_SEQ==2) %>% head(20)
 
-  
 
-  # session 살펴보기
+tail(product)
+product %>% filter(CLNT_ID==4139680&SESS_ID==7605037)
+product %>% filter(CLNT_ID==4133768&SESS_ID==7272433)
+product %>% filter(CLNT_ID==4144914)
+
+
+
+head(product)
+
+
+
+
+# session 살펴보기
 str(session)
-
-table(is.na(session$TOT_SESS_HR_V))
+summary(session)
+head(session$TOT_SESS_HR_V,200)
 
 session$CLNT_ID <- as.factor(session$CLNT_ID)
 session$SESS_ID <- as.factor(session$SESS_ID)
@@ -149,6 +227,7 @@ session$SESS_DT <- as.Date(session$SESS_DT,format="%Y%m%d")
 session$TOT_SESS_HR_V <- gsub(",","",session$TOT_SESS_HR_V)   #integer 타입으로 바꾸기위해 쉼표 제거
 session$TOT_SESS_HR_V <- as.integer(session$TOT_SESS_HR_V)    #integer 타입으로 변환
 session$DVC_CTG_NM <- as.factor(session$DVC_CTG_NM)
+
 session$ZON_NM <- as.factor(session$ZON_NM)
 session$CITY_NM <- as.factor(session$CITY_NM)
 
@@ -158,11 +237,49 @@ session %>% filter(CITY_NM == "(not set)")
 
 session <- session %>% select(-ZON_NM, -CITY_NM)  # 지역 사용안하므로 지움
 
+
+table(is.na(session$CLNT_ID))
+table(is.na(session$SESS_ID))
+table(is.na(session$SESS_SEQ))
+table(is.na(session$SESS_DT))
+table(is.na(session$TOT_PAG_VIEW_CT))   # 결측치 처리해줘야 함 274개
+table(is.na(session$TOT_SESS_HR_V))     # 결측치 처리해줘야 함 14202개 
+table(is.na(session$DVC_CTG_NM))
+table(is.na(session$ZON_NM))
+table(is.na(session$CITY_NM))
+
+
 str(session)
+summary(session)
+
+session <- session %>% filter(!is.na(TOT_PAG_VIEW_CT))
+session <- session %>% filter(!is.na(TOT_SESS_HR_V))
+
 
 
 
 ## 데이터 병합
+str(product)
+str(custom)
+str(master)
+str(session)
+str(search1)
+str(search2)
+
+product <- product %>% 
+  mutate(CL_SE_ID = paste(CLNT_ID,SESS_ID,sep="_"))
+search1 <- search1 %>% 
+  mutate(CL_SE_ID = paste(CLNT_ID,SESS_ID,sep="_"))
+session <- session %>% 
+  mutate(CL_SE_ID = paste(CLNT_ID,SESS_ID,sep="_"))   # 조인할때 참고용
+
+
+behavior <- merge(product, custom, by="CLNT_ID", all.x = TRUE)  # left_join
+str(behavior)
+behavior <- merge(behavior, master, by = "PD_C")
+behavior <- merge(behavior, session, by = "CL_SE_ID")
+
+head(behavior,20)
 
 
 
