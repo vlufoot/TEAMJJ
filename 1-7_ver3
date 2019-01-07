@@ -169,6 +169,30 @@ search2_0623 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
 search2_0624 %>% arrange(desc(SEARCH_CNT)) %>% head(30) 
 #보통 2000건 정도가 최대 검색량정도인듯(일요일에 확 뜀 => 월요병 가정)
 
+dte <- as.Date("2018-04-01")
+
+search2_tmp <- search2 %>% 
+  filter(SESS_DT==dte) %>% 
+  arrange(desc(SEARCH_CNT)) %>%
+  head(30)
+  
+dte <- dte+1
+
+head(search2_tmp)
+
+while(dte<"2018-10-01"){
+
+    search2_tmp2 <- search2 %>%
+    filter(SESS_DT==dte) %>% 
+    arrange(desc(SEARCH_CNT)) %>%
+    head(30)
+    
+  search2_tmp <- bind_rows(search2_tmp, search2_tmp2)
+  dte <- dte+1
+}
+
+write.csv(search2_tmp,"date_search30.csv",row.names = F)
+ 
 
 # product 살펴보기
 
