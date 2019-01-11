@@ -1,0 +1,54 @@
+#-*-coding:utf-8-*-
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+import os
+import time
+from konlpy.tag import Twitter
+from selenium import webdriver
+from bs4 import BeautifulSoup as bs
+from selenium.webdriver.common.keys import Keys
+
+url = "https://www.instagram.com/explore/tags/python"
+DRIVER_DIR = 'C:\Users\USER\chromedriver'
+driver = webdriver.Chrome(DRIVER_DIR)
+driver.implicitly_wait(5)
+
+driver.get(url)
+totalCount = driver.find_element_by_class_name('KC1QD').text
+print("총 게시물:", totalCount)
+
+elem = driver.find_element_by_tag_name("body")
+alt_list = []
+
+pagedowns = 1
+
+while pagedowns < 20:
+    elem.send_keys(Keys.PAGE_DOWN)
+    time.sleep(1)
+    img = driver.find_elements_by_css_selector('div.KL4Bh > img')
+    for i in img:
+        alt_list.append(i.get_attribute('alt'))
+    pagedowns += 1
+    
+alt_list = list(set(alt_list))
+
+dict_data = {}
+
+tw = Twitter()
+
+for alt in alt_list:
+    temp = tw.pos(alt, norm = True)
+    for data in temp:
+        if data[1] == "Hastag":
+            if not (data[0] in dict_data):
+                dict_data[data[0]] = 0
+            dict_data[data[0]] += 1
+            
+keys = sorted(dict_data.items(), key = lambda x:x[1], reverse = True)
+
+for k, v in keys[:15]:
+    print("{}({})",format(k,v))
+
+driver.close()
