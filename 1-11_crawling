@@ -1,0 +1,49 @@
+import time
+import pandas as pd
+import os
+from selenium import webdriver
+from bs4 import BeautifulSoup as bs
+
+driver = webdriver.Chrome("C:/Users/blu05/s-201310630/lib/chromedriver")
+driver.get('https://nid.naver.com/nidlogin.login?svctype=262144&url=http://m.naver.com/')
+
+# 로그인 수동으로 해야함
+driver.find_element_by_name('id').send_keys('blufoot')
+driver.find_element_by_name('pw').send_keys('qmffnvnt1!')
+driver.find_element_by_css_selector('#frmNIDLogin > fieldset > input').click()
+
+
+# 키워드/카페 정해야함 
+keyword = '남자친구선물'
+base_url = "https://m.cafe.naver.com/ArticleSearchList.nhn?search.query=" + keyword + "&search.menuid=&search.searchbY=1&search.sortBy=date&search.clubid=11262350&search.option=0&search.defaultValue=1"
+driver.get(base_url)
+
+# 그냥 다 긁어서 4월~9월까지 수동으로 분류하는게 빠를것같음!!
+for page_num in range(1,2):
+    driver.find_element_by_xpath('//*[@id="moreButton"]').click()
+    time.sleep(1)
+    
+
+article_list = driver.find_elements_by_css_selector('div.search_list > div#articleList > ul.lst_section > li > a')
+article_urls = [i.get_attribute('href') for i in article_list]
+
+
+# csv로
+
+ar_list=[]
+
+for article in article_urls:
+    try:
+        driver.get(article)
+        soup = bs(driver.page_source, 'html.parser')
+        title = soup.select('h2.tit')[0].get_text()
+        date = soup.select("span.date.font_l")[0].get_text()
+        content_tags = soup.select('#postContent')[0].select('p')
+        content = ' '.join([ tags.get_text() for tags in content_tags ])
+        ar_list.append({'title' : title, 'date' : date, 'content' : content})
+        
+    except:
+        pass
+
+cafe_df = pd.DataFrame(ar_list)
+cafe_df.to_csv('20190110.csv', index=False)
