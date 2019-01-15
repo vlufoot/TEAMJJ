@@ -38,17 +38,10 @@ search2 <- fread("Search2.csv",
                  encoding="UTF-8",
                  stringsAsFactors = FALSE)
 
-
-# 데이터 살펴보기 
-
-# custom 살펴보기
+# custom 전처리
 
 str(custom)
 head(custom)
-
-table(custom$CLNT_GENDER)     # 성비 570000 : 100000
-table(custom$CLNT_AGE)        # 나이 10대부터 80대까지 ( 30,40대가 대부분을 차지 )
-hist(custom$CLNT_AGE)         
 
 custom$CLNT_GENDER <- as.factor(custom$CLNT_GENDER)   # 성별 팩터타입 변환
 custom$CLNT_AGE <- as.factor(custom$CLNT_AGE)         # 나이 팩터타입 변환
@@ -57,9 +50,12 @@ table(is.na(custom$CLNT_ID))
 table(is.na(custom$CLNT_GENDER))
 table(is.na(custom$CLNT_AGE))     # 결측치 확인
 
+# custom 탐색
 
+table(custom$CLNT_GENDER)     # 성비 570000 : 100000
+table(custom$CLNT_AGE)        # 나이 10대부터 80대까지 ( 30,40대가 대부분을 차지 )
 
-# master 살펴보기
+# master 전처리
 
 str(master)
 head(master)
@@ -84,186 +80,28 @@ table(is.na(master$Categ_H))
 table(is.na(master$Categ_M))
 table(is.na(master$Categ_S))    # 결측치 확인
 
-
-# search1 살펴보기
-
-str(search1)
-head(search1)
-summary(search1)
-
-search1 %>% filter(CLNT_ID==5612428&SESS_ID==1876482)
-product %>% filter(CLNT_ID==5612428&SESS_ID==1876482)
-master %>% filter(PD_C==134747)
-master %>% filter(PD_C==682810)     # 검색한다고 꼭 구매하는 것은 아님
-
-search1 %>%
-  arrange(desc(SEARCH_CNT)) %>% 
-  head(100)                          # 최대 98번의 검색 이후 구매 / 검색어를 구매하나? / 남성이 왜 등장할까?
-
-table(is.na(search1$CLNT_ID))
-table(is.na(search1$SESS_ID))
-table(is.na(search1$KWD_NM))
-table(is.na(search1$SEARCH_CNT))  # 결측치 확인
-
-
-# search2 살펴보기
-
-str(search2)
-head(search2)
-summary(search2)
-
-search2$SEARCH_CNT <- gsub(",","",search2$SEARCH_CNT)   #integer 타입으로 바꾸기위해 쉼표 제거
-search2$SEARCH_CNT <- as.integer(search2$SEARCH_CNT)              # SEARCH_CNT INT타입변환
-
-search2$SESS_DT <- as.character(search2$SESS_DT)                
-search2$SESS_DT <- as.Date(search2$SESS_DT, format="%Y%m%d")      # SESS_DT 날짜타입변환
-
-
-table(is.na(search2$SEARCH_CNT))
-table(is.na(search2$SESS_DT))
-table(is.na(search2$KWD_NM))    # 결측치 확인
-
-
-
-search2_0618 <- search2 %>%
-  filter(SESS_DT=="2018-06-18")   
-search2_0619 <- search2 %>%
-  filter(SESS_DT=="2018-06-19")   
-search2_0620 <- search2 %>%
-  filter(SESS_DT=="2018-06-20")   
-search2_0621 <- search2 %>%
-  filter(SESS_DT=="2018-06-21")   
-search2_0622 <- search2 %>%
-  filter(SESS_DT=="2018-06-22")   
-search2_0623 <- search2 %>%
-  filter(SESS_DT=="2018-06-23")   
-search2_0624 <- search2 %>%
-  filter(SESS_DT=="2018-06-24")   # 일주일 샘플(요일별로 다를까?)
-
-# 하루에 약 45000개정도의 키워드가 검색되며
-
-45000*180   # search2 가 800만건인 이유 ok
-
-search2_0618 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
-search2_0619 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
-search2_0620 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
-search2_0621 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
-search2_0622 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
-search2_0623 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
-search2_0624 %>% arrange(desc(SEARCH_CNT)) %>% head(30) 
-#보통 2000건 정도가 최대 검색량정도인듯(일요일에 확 뜀 => 월요병 가정)
-
-
-
-# product 살펴보기
-
-str(product)
-head(product)
-summary(product)  # 한번의 구매당 81번의 히트 / 50000원 사용 / 한물품은 1개  
-
-product$PD_BUY_AM <- gsub(",","",product$PD_BUY_AM) #integer 타입으로 바꾸기위해 쉼표 제거
-product$PD_BUY_AM <- as.integer(product$PD_BUY_AM)  # 구매금액 int타입 변환
-product$PD_BUY_CT <- gsub(",","",product$PD_BUY_CT) #integer 타입으로 바꾸기위해 쉼표 제거
-product$PD_BUY_CT <- as.integer(product$PD_BUY_CT)  # 구매갯수 int타입 변환
-
-table(is.na(product$CLNT_ID))
-table(is.na(product$SESS_ID))
-table(is.na(product$HITS_SEQ))
-table(is.na(product$PD_C))
-table(is.na(product$PD_ADD_NM))
-table(is.na(product$PD_BRA_NM))
-table(is.na(product$PD_BUY_AM))
-table(is.na(product$PD_BUY_CT))       # 결측치 확인
-
-product <- product %>% filter(HITS_SEQ!=1)    # 이상치 처리
-
-length(unique(product$PD_BRA_NM)) # 의류브랜드가 대부분(브랜드 22000개정도)
-View(product) 
-product$PD_BRA_NM <- gsub("[[:punct:]]","",product$PD_BRA_NM) # 브랜드 네임에 특수문자 제거
-length(unique(product$PD_BRA_NM))                             # []제거하니 14000개 정도로 줄음
-
-product <- product %>% select(-PD_ADD_NM)                     # PD_ADD_NM은 사용X
-
-
-
-# session 살펴보기
-str(session)
-summary(session)
-
-session %>% group_by(DVC_CTG_NM) %>% summarise(n=n())   # 모바일이 대부분을 차지
-
-session$SESS_DT <- as.character(session$SESS_DT)
-session$SESS_DT <- as.Date(session$SESS_DT,format="%Y%m%d")
-session$TOT_SESS_HR_V <- gsub(",","",session$TOT_SESS_HR_V)   #integer 타입으로 바꾸기위해 쉼표 제거
-session$TOT_SESS_HR_V <- as.integer(session$TOT_SESS_HR_V)    #integer 타입으로 변환
-
-session <- session %>% select(-CITY_NM, -ZON_NM, -DVC_CTG_NM)  # 지역정보, 기기정보는 고려하지 않으므로 지움
-
-table(is.na(session$CLNT_ID))
-table(is.na(session$SESS_ID))
-table(is.na(session$SESS_SEQ))
-table(is.na(session$SESS_DT))
-table(is.na(session$TOT_PAG_VIEW_CT))   # 결측치 처리해줘야 함 274개
-table(is.na(session$TOT_SESS_HR_V))     # 결측치 처리해줘야 함 14202개 
-
-session <- session %>% filter(!is.na(TOT_PAG_VIEW_CT))
-session <- session %>% filter(!is.na(TOT_SESS_HR_V))      # 결측치 포함한 행 삭제
-
-
-
-# 봄과 여름의 행동에 차이가 있을까?(없음)
-
-session_spring <- session %>% filter(SESS_DT < "2018-07-01")
-session_summer <- session %>% filter(SESS_DT >= "2018-07-01")
-
-mean(session_spring$TOT_SESS_HR_V)
-mean(session_summer$TOT_SESS_HR_V)
-mean(session_spring$TOT_PAG_VIEW_CT)
-mean(session_summer$TOT_PAG_VIEW_CT)
-
-
-
-
-
-
-
-# 패션 외 카테고리 지우자
-str(master)
-
-table(master$Categ_H)
-table(master$Categ_M)
-table(master$Categ_S)
-table(master_fm$Categ_S)
-table(master_fm$Categ_M)
-table(master_fm$Categ_H)
-
+      # Fashion 카테고리만 도출
 
 master_f <- master %>% filter(Categ_M %in% c("골프","남성가방","남성골프의류","남성등산/아웃도어의류",
-                                               "남성속옷","남성스포츠화","남성양말류","남성의류상의",
-                                               "남성의류세트","남성의류아우터","남성의류하의","남성일반스포츠의류",
-                                               "남성지갑","남성케어","남성화","남아의류상의","남아의류세트",
-                                               "남아의류하의","등산","메이크업","모자","바디케어","보석",
-                                               "선케어","수영/물놀이","스킨케어","스포츠잡화","시계",
-                                               "안경/선글라스","여성가방","여성골프의류","여성등산/아웃도어의류",
-                                               "여성속옷","여성스포츠화","여성양말류","여성위생용품",
-                                               "여성의류상의","여성의류아우터","여성의류전신","여성의류하의",
-                                               "여성일반스포츠의류","여성지갑","여성화","여아의류상의",
-                                               "여아의류아우터","여아의류하의","여행용가방류","유아동속옷",
-                                               "유아동스포츠화","유아동양말류","유아동일반스포츠의류","유아동화",
-                                               "유아스킨/바디케어","유아위생용품","유아의류상의","유아의류아우터",
-                                               "유아의류전신","유아의류하의","캐쥬얼가방","패션액세서리",
-                                               "피트니스","핸드/풋케어","향수","헤어케어","홈웨어"))
+                                             "남성속옷","남성스포츠화","남성양말류","남성의류상의",
+                                             "남성의류세트","남성의류아우터","남성의류하의","남성일반스포츠의류",
+                                             "남성지갑","남성케어","남성화","남아의류상의","남아의류세트",
+                                             "남아의류하의","등산","메이크업","모자","바디케어","보석",
+                                             "선케어","수영/물놀이","스킨케어","스포츠잡화","시계",
+                                             "안경/선글라스","여성가방","여성골프의류","여성등산/아웃도어의류",
+                                             "여성속옷","여성스포츠화","여성양말류","여성위생용품",
+                                             "여성의류상의","여성의류아우터","여성의류전신","여성의류하의",
+                                             "여성일반스포츠의류","여성지갑","여성화","여아의류상의",
+                                             "여아의류아우터","여아의류하의","여행용가방류","유아동속옷",
+                                             "유아동스포츠화","유아동양말류","유아동일반스포츠의류","유아동화",
+                                             "유아스킨/바디케어","유아위생용품","유아의류상의","유아의류아우터",
+                                             "유아의류전신","유아의류하의","캐쥬얼가방","패션액세서리",
+                                             "피트니스","핸드/풋케어","향수","헤어케어","홈웨어"))
 
 master_f <- master_f %>% filter(!Categ_S %in% c("골프공","골프연습장비","골프채","골프채세트","구명조끼/안전용품","기저귀크럼/파우더","기타남성화","기타물놀이용품","기타배낭소품","기타요가/필라테스소품","기타피트니스기구","노트북가방","등산지팡이/스틱","러닝/워킹머신","물안경","복근/벨트마사지기구","부채","샴푸","샴푸/린스세트","스텝퍼/트위스트","승마운동기","아이젠","여성세정제","여행용세트","여행용소품","열쇠고리","오리발/스노클링","요가/스포츠매트","입욕제/스파제품","전통/종교장신구","튜브/보트","피트니스용품","헬스바이크","헤드웨어","기저귀크림/파우더"))
 
 
-table(master_f$Categ_H)
-table(master_f$Categ_M)
-table(master_f$Categ_S)
-
-
-
-# 키워드의 성별 구분
+      # 키워드의 성별 구분
 
 # Categ_M 남성 키워드 :
 
@@ -330,6 +168,157 @@ master_fb_add <- master_f %>%
 master_fw <- bind_rows(master_fw, master_fw_add)
 master_fm <- bind_rows(master_fm, master_fm_add)
 master_fb <- bind_rows(master_fb, master_fb_add)
+
+
+
+
+
+
+
+# search1 살펴보기
+
+str(search1)
+head(search1)
+summary(search1)
+
+search1 <- search1 %>% 
+  mutate(CL_SE_ID = paste(CLNT_ID,SESS_ID,sep="_"))  # 병합을 위한 파생변수 생ㅅ성
+
+search1 %>% filter(CLNT_ID==5612428&SESS_ID==1876482)
+product %>% filter(CLNT_ID==5612428&SESS_ID==1876482)
+master %>% filter(PD_C==134747)
+master %>% filter(PD_C==682810)     # 검색한다고 꼭 구매하는 것은 아님
+
+search1 %>%
+  arrange(desc(SEARCH_CNT)) %>% 
+  head(100)                          # 최대 98번의 검색 이후 구매 / 검색어를 구매하나? / 남성이 왜 등장할까?
+
+table(is.na(search1$CLNT_ID))
+table(is.na(search1$SESS_ID))
+table(is.na(search1$KWD_NM))
+table(is.na(search1$SEARCH_CNT))  # 결측치 확인
+
+
+# search2 살펴보기
+
+str(search2)
+head(search2)
+summary(search2)
+
+search2$SEARCH_CNT <- gsub(",","",search2$SEARCH_CNT)   #integer 타입으로 바꾸기위해 쉼표 제거
+search2$SEARCH_CNT <- as.integer(search2$SEARCH_CNT)              # SEARCH_CNT INT타입변환
+
+search2$SESS_DT <- as.character(search2$SESS_DT)                
+search2$SESS_DT <- as.Date(search2$SESS_DT, format="%Y%m%d")      # SESS_DT 날짜타입변환
+
+
+table(is.na(search2$SEARCH_CNT))
+table(is.na(search2$SESS_DT))
+table(is.na(search2$KWD_NM))    # 결측치 확인
+
+
+search2 %>% filter(SEARCH_CNT == 5043)
+search2 %>% arrange(desc(SEARCH_CNT)) %>% head(20)
+
+search2_0618 <- search2 %>%
+  filter(SESS_DT=="2018-06-18")   
+search2_0619 <- search2 %>%
+  filter(SESS_DT=="2018-06-19")   
+search2_0620 <- search2 %>%
+  filter(SESS_DT=="2018-06-20")   
+search2_0621 <- search2 %>%
+  filter(SESS_DT=="2018-06-21")   
+search2_0622 <- search2 %>%
+  filter(SESS_DT=="2018-06-22")   
+search2_0623 <- search2 %>%
+  filter(SESS_DT=="2018-06-23")   
+search2_0624 <- search2 %>%
+  filter(SESS_DT=="2018-06-24")   # 일주일 샘플(요일별로 다를까?)
+
+# 하루에 약 45000개정도의 키워드가 검색되며
+
+45000*180   # search2 가 800만건인 이유 ok
+
+search2_0618 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
+search2_0619 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
+search2_0620 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
+search2_0621 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
+search2_0622 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
+search2_0623 %>% arrange(desc(SEARCH_CNT)) %>% head(30)
+search2_0624 %>% arrange(desc(SEARCH_CNT)) %>% head(30) 
+#보통 2000건 정도가 최대 검색량정도인듯(일요일에 확 뜀 => 월요병 가정)
+
+
+
+# product 살펴보기
+
+str(product)
+head(product)
+summary(product)  # 한번의 구매당 81번의 히트 / 50000원 사용 / 한물품은 1개  
+
+product$PD_BUY_AM <- gsub(",","",product$PD_BUY_AM) #integer 타입으로 바꾸기위해 쉼표 제거
+product$PD_BUY_AM <- as.integer(product$PD_BUY_AM)  # 구매금액 int타입 변환
+product$PD_BUY_CT <- gsub(",","",product$PD_BUY_CT) #integer 타입으로 바꾸기위해 쉼표 제거
+product$PD_BUY_CT <- as.integer(product$PD_BUY_CT)  # 구매갯수 int타입 변환
+
+
+product <- product %>% filter(HITS_SEQ!=1)    # 이상치 처리
+
+
+table(is.na(product$CLNT_ID))
+table(is.na(product$SESS_ID))
+table(is.na(product$HITS_SEQ))
+table(is.na(product$PD_C))
+table(is.na(product$PD_ADD_NM))
+table(is.na(product$PD_BRA_NM))
+table(is.na(product$PD_BUY_AM))
+table(is.na(product$PD_BUY_CT))       # 결측치 확인
+
+
+length(unique(product$PD_BRA_NM)) # 의류브랜드가 대부분(브랜드 22000개정도)
+View(product) 
+product$PD_BRA_NM <- gsub("[[:punct:]]","",product$PD_BRA_NM) # 브랜드 네임에 특수문자 제거
+length(unique(product$PD_BRA_NM))                             # []제거하니 14000개 정도로 줄음
+
+product <- product %>% select(-PD_ADD_NM)                     # PD_ADD_NM은 사용X
+
+
+
+# session 살펴보기
+str(session)
+summary(session)
+
+session <- session %>% 
+  mutate(CL_SE_ID = paste(CLNT_ID,SESS_ID,sep="_"))
+
+session %>% group_by(DVC_CTG_NM) %>% summarise(n=n())   # 모바일이 대부분을 차지
+
+session$SESS_DT <- as.character(session$SESS_DT)
+session$SESS_DT <- as.Date(session$SESS_DT,format="%Y%m%d")
+session$TOT_SESS_HR_V <- gsub(",","",session$TOT_SESS_HR_V)   #integer 타입으로 바꾸기위해 쉼표 제거
+session$TOT_SESS_HR_V <- as.integer(session$TOT_SESS_HR_V)    #integer 타입으로 변환
+
+session <- session %>% select(-CITY_NM, -ZON_NM, -DVC_CTG_NM)  # 지역정보, 기기정보는 고려하지 않으므로 지움
+
+table(is.na(session$CLNT_ID))
+table(is.na(session$SESS_ID))
+table(is.na(session$SESS_SEQ))
+table(is.na(session$SESS_DT))
+table(is.na(session$TOT_PAG_VIEW_CT))   # 결측치 처리해줘야 함 274개
+table(is.na(session$TOT_SESS_HR_V))     # 결측치 처리해줘야 함 14202개 
+
+session <- session %>% filter(!is.na(TOT_PAG_VIEW_CT))
+session <- session %>% filter(!is.na(TOT_SESS_HR_V))      # 결측치 포함한 행 삭제
+
+
+
+
+
+
+
+
+
+
 
 
 
